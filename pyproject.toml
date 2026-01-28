@@ -2,8 +2,7 @@
 dependencies = [
     "distro",
     "imaplib2>=3.5",
-    "rfc6555",
-    "urllib3~=1.25.9"
+    "rfc6555"
 ]
 name = "offlineimap"
 version = "8.0.1"
@@ -50,7 +49,7 @@ requires = [
 keyring = ["keyring"]
 cygwin = ["portalocker[cygwin]"]
 kerberos = ["gssapi[kerberos]"]
-testinternet = ["certifi~=2020.6.20"]
+testinternet = ["certifi~=2020.6.20", "urllib3~=1.25.9"]
 
 [project.scripts]
 offlineimap = "offlineimap.init:main"

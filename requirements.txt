@@ -2,4 +2,3 @@
 rfc6555
 distro; python_version > "3.6"
 imaplib2>=3.5
-urllib3~=1.25.9
