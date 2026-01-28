@@ -89,7 +89,7 @@ setup(name="offlineimap",
                         'rfc6555'],
       extras_require={'cygwin':'portalocker[cygwin]',
                       'kerberos':'gssapi[kerberos]',
-                      'keyring':'keyring[keyring]',
+                      'keyring':'keyring',
                       'pysocks':'pysocks',
                       'testinternet':['certifi~=2020.6.20', 'urllib3~=1.25.9']}
       )
