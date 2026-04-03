@@ -54,7 +54,7 @@ open an issue.
 
 ## License
 
-GNU General Public License v2.
+GNU General Public License v2.0 or later.
 
 
 ## Downloads
