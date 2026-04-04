@@ -24,6 +24,7 @@ import urllib.parse
 import urllib.error
 import time
 import errno
+import select
 import socket
 from socket import gaierror
 from sys import exc_info
@@ -38,6 +39,27 @@ try:
     have_gss = True
 except ImportError:
     have_gss = False
+
+
+def _is_socket_alive(imapobj):
+    """Returns True if the underlying socket connection is still usable.
+
+    Note: MSG_PEEK is not supported on ssl.SSLSocket, so we only check
+    for explicit error conditions and whether the socket has a peer address.
+    """
+    try:
+        sock = imapobj.socket()
+        if sock is None:
+            return False
+        sock.getpeername()  # OSError if socket is closed or not connected
+        # Check for socket errors without blocking.  If the socket is closed,
+        # this will raise an OSError with errno.EBADF;
+        # if the socket is still open but has an error, this will return it
+        # in the third list of select.select() and cause us to return False.
+        _, _, e = select.select([], [], [sock], 0.0)
+        return not bool(e)
+    except (OSError, socket.error):
+        return False
 
 
 class IMAPServer:
@@ -462,6 +484,15 @@ class IMAPServer:
             except (imapobj.error, OfflineImapError) as e:
                 self.ui.warn('%s authentication failed: %s' % (m, e))
                 exc_stack.append((m, e))
+
+                # If the socket is dead, don't even try to authenticate
+                # with the next method, since it will just fail with a socket
+                # error. Instead, bail out immediately and let
+                # acquireconnection() handle the error and cleanup.
+                if not _is_socket_alive(imapobj):
+                    msg = f"Socket dead after {m} failure, aborting remaining auth methods"
+                    self.ui.debug('imap', msg)
+                    break
 
         if len(exc_stack):
             msg = "\n\t".join([": ".join((x[0], str(x[1]))) for x in exc_stack])
