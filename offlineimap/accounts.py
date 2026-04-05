@@ -372,7 +372,17 @@ class SyncableAccount(Account):
 
             # Init repos with list of folders, so we have them (and the
             # folder delimiter etc).
-            remoterepos.getfolders()
+
+            # Get the remote folders. If it fails, continue with next account
+            try:
+                remoterepos.getfolders()
+            except OfflineImapError as e:
+                msg = f"Error while getting folders for repository "
+                msg += f"'{remoterepos.name}' of account '{self}': {e} - "
+                msg += "skipping account."
+                self.ui.warn(msg)
+                return  # Continue with next account.
+
             localrepos.getfolders()
 
             remoterepos.sync_folder_structure(localrepos, statusrepos)
